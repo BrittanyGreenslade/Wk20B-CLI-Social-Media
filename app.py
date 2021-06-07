@@ -14,14 +14,36 @@ def user_login(alias, password):
             user = cursor.fetchall()
             if user == []:
                 print("Sorry, that username/password combo is incorrect \n")
-                continue
+                return False
+                # continue
             # if not empty, there was a match. this greets them
             else:
                 for name in user:
                     print(f"Hello {name[0]}!")
-            break
-        except:
+                return True
+        except KeyboardInterrupt:
             traceback.print_exc()
+            break
+    dbconnect.close_db_cursor(cursor)
+    dbconnect.close_db_connection(conn)
+
+
+def user_signup(alias, password):
+    conn = dbconnect.get_db_connection()
+    cursor = dbconnect.get_db_cursor(conn)
+    cursor.execute(
+        "SELECT * FROM hackers h WHERE h.alias = ? AND h.password = ?", [alias, password])
+    selected_data = cursor.fetchall()
+    if selected_data != []:
+        print("That username is unavailable. Try again")
+        return False
+    else:
+        print("New account created!")
+        cursor.execute("INSERT INTO hackers(alias, password) VALUES(?, ?)", [
+            alias, password])
+        conn.commit()
+
+    # print("New account created!")
     dbconnect.close_db_cursor(cursor)
     dbconnect.close_db_connection(conn)
 
@@ -38,6 +60,8 @@ def new_exploit(user_id):
     print("You did it! That was mean and you should be ashamed of yourself \n")
     dbconnect.close_db_cursor(cursor)
     dbconnect.close_db_connection(conn)
+
+# def mod_exploit(user_id):
 
 
 def see_your_exploits(user_id):
@@ -69,13 +93,28 @@ def see_all_exlpoits(user_id):
     dbconnect.close_db_connection(conn)
 
 
-alias = input("Please enter your alias: ")
-password = input("Please enter your password: ")
+while True:
+    welcome_selection = int(input(
+        "Welcome! Choose from the following options: \n 1. Login \n 2. Sign Up \n Selection: "))
+    # login info
+    alias = input("Please enter your alias: ")
+    password = input("Please enter your password: ")
+    # want to make this only prompt for alias/password not selection again?
+    if welcome_selection == 1:
+        if user_login(alias, password) == False:
+            continue
+        else:
+            break
+    elif welcome_selection == 2:
+        if user_signup(alias, password) == False:
+            continue
+        else:
+            break
+    else:
+        print("Invalid selection")
+        continue
+    break
 
-
-# Also I don't know when it's appropriate to NOT put something in the try statement....
-# everything just feels dangerous and scary and gives me anxiety now
-user_login(alias, password)
 while True:
     try:
         # need these to access user_id
@@ -110,13 +149,5 @@ while True:
     except:
         print("Sorry, something went wrong")
         traceback.print_exc()
-
-        # elif selection == 3:
-
-        # elif selection == 4:
-
         dbconnect.close_db_cursor(cursor)
         dbconnect.close_db_connection(conn)
-
-
-# user_login(alias, password)
