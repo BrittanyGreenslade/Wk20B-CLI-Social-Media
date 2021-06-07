@@ -24,7 +24,7 @@ def close_db_cursor(cursor):
     if(cursor == None):
         return True
     try:
-        cursor.cursor()
+        cursor.close()
         return True
     except:
         print("Error closing cursor on DB!")
